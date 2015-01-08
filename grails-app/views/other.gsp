@@ -1,4 +1,4 @@
-<%@page expressionCodec="raw" %>
+%{--<%@page expressionCodec="raw" %>--}%
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -7,8 +7,9 @@
     <asset:stylesheet href="uploadr.manifest.css"/>
     <asset:stylesheet href="uploadr.demo.manifest.css"/>
     <asset:stylesheet href="bootstrap.manifest.css"/>
+    <uploadr:declareGlobalOptions/>
 </head>
 <body>
-    <uploadr:demo/>
+    <uploadr:demoOther/>
 </body>
 </html>

@@ -24,6 +24,251 @@ class UploadrTagLib {
 	// define namespace
 	static namespace = "uploadr"
 
+    def declareGlobalOptions = { attrs, body ->
+        def sound 			= !(attrs.containsKey('noSound') && attrs.get('noSound').toString().toBoolean())
+        def classname		= (attrs.containsKey('class') ? attrs.get('class') : 'uploadr')
+        def direction 		= (attrs.containsKey('direction') ? attrs.get('direction') : 'down')
+        def placeholder		= (attrs.containsKey('placeholder') ? attrs.get('placeholder') : '')
+        def fileselect		= (attrs.containsKey('fileselect') ? attrs.get('fileselect') : '')
+        def maxVisible		= (attrs.containsKey('maxVisible') ? attrs.get('maxVisible') : 0)
+        def rating 			= (attrs.containsKey('rating') ? attrs.get('rating').toString().toBoolean() : false)
+        def voting 			= (attrs.containsKey('voting') ? attrs.get('voting').toString().toBoolean() : false)
+        def colorPicker		= (attrs.containsKey('colorPicker') ? attrs.get('colorPicker').toString().toBoolean() : false)
+        def maxSize			= (attrs.containsKey('maxSize') ? attrs.get('maxSize') as Integer : 0)
+        def deletable		= (attrs.containsKey('deletable') ? attrs.get('deletable').toString().toBoolean() : true)
+        def viewable		= (attrs.containsKey('viewable') ? attrs.get('viewable').toString().toBoolean() : true)
+        def downloadable	= (attrs.containsKey('downloadable') ? attrs.get('downloadable').toString().toBoolean() : true)
+        def allowedExtensions= (attrs.containsKey('allowedExtensions') ? attrs.get('allowedExtensions').toString() : "")
+        def maxConcurrentUploads= (attrs.containsKey('maxConcurrentUploads') ? attrs.get('maxConcurrentUploads').toString().toInteger() : 0)
+        def maxConcurrentUploadsMethod = (attrs.containsKey('maxConcurrentUploadsMethod') ? attrs.get('maxConcurrentUploadsMethod').toString() : 'pause')
+
+        // make sure body tags are handled
+        body()
+
+        out << "<script>"
+        out << g.render(
+                plugin	: 'uploadr',
+                template: "/js/declareGlobalOptions",
+                model	:[
+                        maxSize		        : maxSize,
+                        direction 	        : direction,
+                        placeholder	        : placeholder,
+                        fileselect 	        : fileselect,
+                        classname	        : classname,
+                        maxVisible	        : maxVisible,
+                        sound 		        : sound,
+                        rating		        : rating,
+                        voting		        : voting,
+                        colorPicker	        : colorPicker,
+                        viewable	        : viewable,
+                        downloadable        : downloadable,
+                        deletable	        : deletable,
+                        allowedExtensions   : allowedExtensions,
+                        maxConcurrentUploads: maxConcurrentUploads,
+                        maxConcurrentUploadsMethod: maxConcurrentUploadsMethod,
+                        unsupported	        : (attrs.get('unsupported')) ? attrs.unsupported : createLink(plugin: 'uploadr', controller: 'upload', action: 'warning')
+                ]
+        )
+        out << "</script>"
+    }
+    def finalOptions = { attrs, body ->
+        def uri
+        def data = [:]
+        def name			= (attrs.containsKey('name') ? attrs.get('name') : UUID.randomUUID())
+        data.name			= name
+        if(attrs.containsKey('noSound')) data.sound         = !(attrs.containsKey('noSound') && attrs.get('noSound').toString().toBoolean())
+        if(attrs.containsKey('class')) data.classname		= (attrs.containsKey('class') ? attrs.get('class') : 'uploadr')
+        if(attrs.containsKey('direction')) data.direction 		= (attrs.containsKey('direction') ? attrs.get('direction') : 'down')
+        if(attrs.containsKey('placeholder')) data.placeholder		= (attrs.containsKey('placeholder') ? attrs.get('placeholder') : '')
+        if(attrs.containsKey('fileselect')) data.fileselect		= (attrs.containsKey('fileselect') ? attrs.get('fileselect') : '')
+        if(attrs.containsKey('maxVisible')) data.maxVisible		= (attrs.containsKey('maxVisible') ? attrs.get('maxVisible') : 0)
+        if(attrs.containsKey('rating')) data.rating 			= (attrs.containsKey('rating') ? attrs.get('rating').toString().toBoolean() : false)
+        if(attrs.containsKey('voting')) data.voting 			= (attrs.containsKey('voting') ? attrs.get('voting').toString().toBoolean() : false)
+        if(attrs.containsKey('colorPicker')) data.colorPicker		= (attrs.containsKey('colorPicker') ? attrs.get('colorPicker').toString().toBoolean() : false)
+        if(attrs.containsKey('maxSize')) data.maxSize			= (attrs.containsKey('maxSize') ? attrs.get('maxSize') as Integer : 0)
+        if(attrs.containsKey('deletable')) data.deletable		= (attrs.containsKey('deletable') ? attrs.get('deletable').toString().toBoolean() : true)
+        if(attrs.containsKey('viewable')) data.viewable		= (attrs.containsKey('viewable') ? attrs.get('viewable').toString().toBoolean() : true)
+        if(attrs.containsKey('downloadable')) data.downloadable	= (attrs.containsKey('downloadable') ? attrs.get('downloadable').toString().toBoolean() : true)
+        if(attrs.containsKey('allowedExtensions')) data.allowedExtensions= (attrs.containsKey('allowedExtensions') ? attrs.get('allowedExtensions').toString() : "")
+        if(attrs.containsKey('maxConcurrentUploads')) data.maxConcurrentUploads= (attrs.containsKey('maxConcurrentUploads') ? attrs.get('maxConcurrentUploads').toString().toInteger() : 0)
+        if(attrs.containsKey('maxConcurrentUploadsMethod')) data.maxConcurrentUploadsMethod = (attrs.containsKey('maxConcurrentUploadsMethod') ? attrs.get('maxConcurrentUploadsMethod').toString() : 'pause')
+        def model           = (attrs.containsKey('model') ? attrs.get('model') : [:])
+
+        // define uri
+        if (attrs.get('controller')) {
+            // get parameters if any to pass to the custom controller/action
+            def params = attrs.containsKey('params') ? attrs.get('params') : []
+
+            // got an action attribute?
+            if (attrs.get('action')) {
+                // got a plugin attribute?
+                if (attrs.get('plugin')) {
+                    uri = createLink(plugin: attrs.plugin, controller: attrs.controller, action: attrs.action, params: params)
+                } else {
+                    uri = createLink(controller: attrs.controller, action: attrs.action, params: params)
+                }
+            } else {
+                // got a plugin attribute?
+                if (attrs.get('plugin')) {
+                    uri = createLink(plugin: attrs.plugin, controller: attrs.controller, params: params)
+                } else {
+                    uri = createLink(controller: attrs.controller, params: params)
+                }
+            }
+        } else {
+            // use default controller for handling file uploads
+            uri = createLink(plugin: 'uploadr', controller: 'upload', action: 'handle')
+        }
+
+        // got a path attribute?
+        if (attrs.get('path')) {
+            // initialize session if necessary
+            if (!session.uploadr) session.uploadr = [:]
+
+            // and remember stuff in the session
+            if (!session.uploadr[name]) {
+                session.uploadr[name] = [
+                        uri		: uri,
+                        path	: attrs.path,
+                        model   : model,
+                        created : new Date()
+                ]
+            } else if (session.uploadr[name].path != attrs.path) {
+                // another uploadr with this name already exists in the session
+                // spit out a warning
+                log.error "uploadr: warning! Another uploadr with the same name (${name}) is already using another upload path (${attrs.path}). Make sure you are using unique names for your uploadr elements!"
+            } else {
+                // update the model in the session
+                session.uploadr[name].model = model
+                session.uploadr[name].lastUsed = new Date()
+                session.uploadr[name].lastAction = "render"
+            }
+        }
+
+        // init pageScope
+        pageScope.name			= name
+        pageScope.path			= session.uploadr?.get(name)?.path
+        pageScope.handlers		= [:]
+        pageScope.files			= []
+        pageScope.temp			= [:]
+
+        // make sure body tags are handled
+        body()
+        data.uri = uri
+        data.handlers = pageScope.handlers
+        data.files = pageScope.files
+        out << g.render(
+                plugin	: 'uploadr',
+                template: "/js/finalOptions",
+                model	: data
+        )
+    }
+    def addNew = { attrs, body ->
+
+        def uri
+        def data = [:]
+        def name			= (attrs.containsKey('name') ? attrs.get('name') : UUID.randomUUID())
+        def classname		= (attrs.containsKey('class') ? attrs.get('class') : 'uploadr')
+        data.name			= name
+        if(attrs.containsKey('noSound')) data.sound         = !(attrs.containsKey('noSound') && attrs.get('noSound').toString().toBoolean())
+        data.classname		= classname
+        if(attrs.containsKey('direction')) data.direction 		= (attrs.containsKey('direction') ? attrs.get('direction') : 'down')
+        if(attrs.containsKey('placeholder')) data.placeholder		= (attrs.containsKey('placeholder') ? attrs.get('placeholder') : '')
+        if(attrs.containsKey('fileselect')) data.fileselect		= (attrs.containsKey('fileselect') ? attrs.get('fileselect') : '')
+        if(attrs.containsKey('maxVisible')) data.maxVisible		= (attrs.containsKey('maxVisible') ? attrs.get('maxVisible') : 0)
+        if(attrs.containsKey('rating')) data.rating 			= (attrs.containsKey('rating') ? attrs.get('rating').toString().toBoolean() : false)
+        if(attrs.containsKey('voting')) data.voting 			= (attrs.containsKey('voting') ? attrs.get('voting').toString().toBoolean() : false)
+        if(attrs.containsKey('colorPicker')) data.colorPicker		= (attrs.containsKey('colorPicker') ? attrs.get('colorPicker').toString().toBoolean() : false)
+        if(attrs.containsKey('maxSize')) data.maxSize			= (attrs.containsKey('maxSize') ? attrs.get('maxSize') as Integer : 0)
+        if(attrs.containsKey('deletable')) data.deletable		= (attrs.containsKey('deletable') ? attrs.get('deletable').toString().toBoolean() : true)
+        if(attrs.containsKey('viewable')) data.viewable		= (attrs.containsKey('viewable') ? attrs.get('viewable').toString().toBoolean() : true)
+        if(attrs.containsKey('downloadable')) data.downloadable	= (attrs.containsKey('downloadable') ? attrs.get('downloadable').toString().toBoolean() : true)
+        if(attrs.containsKey('allowedExtensions')) data.allowedExtensions= (attrs.containsKey('allowedExtensions') ? attrs.get('allowedExtensions').toString() : "")
+        if(attrs.containsKey('maxConcurrentUploads')) data.maxConcurrentUploads= (attrs.containsKey('maxConcurrentUploads') ? attrs.get('maxConcurrentUploads').toString().toInteger() : 0)
+        if(attrs.containsKey('maxConcurrentUploadsMethod')) data.maxConcurrentUploadsMethod = (attrs.containsKey('maxConcurrentUploadsMethod') ? attrs.get('maxConcurrentUploadsMethod').toString() : 'pause')
+        def model           = (attrs.containsKey('model') ? attrs.get('model') : [:])
+
+        // define uri
+        if (attrs.get('controller')) {
+            // get parameters if any to pass to the custom controller/action
+            def params = attrs.containsKey('params') ? attrs.get('params') : []
+
+            // got an action attribute?
+            if (attrs.get('action')) {
+                // got a plugin attribute?
+                if (attrs.get('plugin')) {
+                    uri = createLink(plugin: attrs.plugin, controller: attrs.controller, action: attrs.action, params: params)
+                } else {
+                    uri = createLink(controller: attrs.controller, action: attrs.action, params: params)
+                }
+            } else {
+                // got a plugin attribute?
+                if (attrs.get('plugin')) {
+                    uri = createLink(plugin: attrs.plugin, controller: attrs.controller, params: params)
+                } else {
+                    uri = createLink(controller: attrs.controller, params: params)
+                }
+            }
+        } else {
+            // use default controller for handling file uploads
+            uri = createLink(plugin: 'uploadr', controller: 'upload', action: 'handle')
+        }
+
+        // got a path attribute?
+        if (attrs.get('path')) {
+            // initialize session if necessary
+            if (!session.uploadr) session.uploadr = [:]
+
+            // and remember stuff in the session
+            if (!session.uploadr[name]) {
+                session.uploadr[name] = [
+                        uri		: uri,
+                        path	: attrs.path,
+                        model   : model,
+                        created : new Date()
+                ]
+            } else if (session.uploadr[name].path != attrs.path) {
+                // another uploadr with this name already exists in the session
+                // spit out a warning
+                log.error "uploadr: warning! Another uploadr with the same name (${name}) is already using another upload path (${attrs.path}). Make sure you are using unique names for your uploadr elements!"
+            } else {
+                // update the model in the session
+                session.uploadr[name].model = model
+                session.uploadr[name].lastUsed = new Date()
+                session.uploadr[name].lastAction = "render"
+            }
+        }
+
+        // init pageScope
+        pageScope.name			= name
+        pageScope.path			= session.uploadr?.get(name)?.path
+        pageScope.handlers		= [:]
+        pageScope.files			= []
+        pageScope.temp			= [:]
+
+        // make sure body tags are handled
+        body()
+        String varName = attrs.varName ?: 'uploadrOptions'
+        data.varName = varName
+        data.uri = uri
+        data.handlers = pageScope.handlers
+        data.files = pageScope.files
+        // render file upload div
+        out << "<div name=\"${name}\" class=\"${classname}\"></div>"
+
+        def finalOptions = g.render(
+                plugin	: 'uploadr',
+                template: '/js/finalOptions',
+                model	: data
+        )
+        out << "<script>"
+        out << "\$(document).ready(function() {"
+        out << "var ${varName} = ${finalOptions};"
+        out << "\$('.${classname}[name=${name}]').uploadr(${varName});"
+        out << "});"
+        out << "</script>"
+    }
+
 	/**
 	 * render an file uploadr element
 	 * @param Map           attributes
@@ -121,7 +366,7 @@ class UploadrTagLib {
         out << "<script>"
         out << g.render(
 			plugin	: 'uploadr',
-			template:'/js/init',
+			template: attrs.template ?: '/js/init',
 			model	:[
 				name		        : name,
 				maxSize		        : maxSize,
@@ -149,8 +394,11 @@ class UploadrTagLib {
         out << "</script>"
 	}
 
-	def demo = { attrs, body ->
-		out << g.render(plugin: 'uploadr', template:'/upload/demo')
+    def demo = { attrs, body ->
+        out << g.render(plugin: 'uploadr', template:'/upload/demo')
+    }
+	def demoOther = { attrs, body ->
+		out << g.render(plugin: 'uploadr', template:'/upload/demoOther')
 	}
 
 	def onStart = { attrs, body ->
