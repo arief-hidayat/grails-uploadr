@@ -13,12 +13,3 @@
 *= require shCore
 *= require_self
 */
-
-$(document).ready(function() {
-    $('#clearButton3').on('click', function() {
-        $('.uploadr[name=myThirdUploadr]').data('uploadr').clear({
-            sound: true,
-            erase: false
-        });
-    });
-});
