@@ -62,8 +62,7 @@ grails.project.dependency.resolution = {
 
         // when running the plugin
         provided(
-                ":tomcat:7.0.55",
-                ":grom:latest.integration",
+                ":tomcat:7.0.54",
                 ":jquery:1.11.1",
                 ':cache:1.1.8'
         ) {
